@@ -23,9 +23,9 @@ Install:
 ## Release tag
 
 ```sh
-git tag v0.1.2
+git tag v0.1.3
 git push origin --tags
-go list -m github.com/n0z0/cachedb@v0.1.2
+go list -m github.com/n0z0/cachedb@v0.1.3
 ```
 
 ## Usage
