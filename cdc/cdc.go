@@ -8,9 +8,9 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func Connect() (cachepb.CacheClient, *grpc.ClientConn, error) {
+func Connect(address string) (cachepb.CacheClient, *grpc.ClientConn, error) {
 	// Use a standard host:port target; the "ipv4:" prefix is not a valid gRPC target
-	conn, err := grpc.NewClient("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
