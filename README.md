@@ -51,11 +51,11 @@ import (
 
 func main() {
     // Connect to cache server
-    client, err := cdc.Connect()
+    client, conn, err := cdc.Connect()
     if err != nil {
         log.Fatalf("Failed to connect: %v", err)
     }
-    defer client.Close()
+    defer conn.Close()
     
     // Set a key-value pair
     err = cdc.Set("user:1", "John Doe", client)

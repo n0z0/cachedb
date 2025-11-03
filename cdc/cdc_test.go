@@ -49,7 +49,7 @@ func (m *MockCacheClient) Clear(ctx context.Context, req interface{}, opts ...gr
 func TestConnect(t *testing.T) {
 	// Test the actual connection - this will fail if no server is running
 	// but it's good to have a basic test
-	client, err := Connect()
+	client, _, err := Connect()
 
 	// We expect this to fail in a test environment since there's no gRPC server
 	if err != nil {
