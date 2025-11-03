@@ -25,4 +25,5 @@ Install:
 ```sh
 git tag v0.1.0
 git push origin --tags
+go list -m github.com/n0z0/cachedb@v0.1.0
 ```
