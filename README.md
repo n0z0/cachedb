@@ -42,38 +42,37 @@ go get github.com/n0z0/cachedb
 package main
 
 import (
-    "fmt"
-    "log"
-    
-    "github.com/n0z0/cachedb/cdc"
-    "github.com/n0z0/cachedb/proto/cachepb"
+ "fmt"
+ "log"
+
+ "github.com/n0z0/cachedb/cdc"
 )
 
 func main() {
-    // Connect to cache server
-    client, conn, err := cdc.Connect("127.0.0.1:50051")
-    if err != nil {
-        log.Fatalf("Failed to connect: %v", err)
-    }
-    defer conn.Close()
-    
-    // Set a key-value pair
-    err = cdc.Set("user:1", "John Doe", client)
-    if err != nil {
-        log.Fatalf("Failed to set: %v", err)
-    }
-    
-    // Get a value by key
-    value, err := cdc.Get("user:1", client)
-    if err != nil {
-        log.Fatalf("Failed to get: %v", err)
-    }
-    
-    if value != "" {
-        fmt.Printf("Value: %s\n", value)
-    } else {
-        fmt.Println("Key not found")
-    }
+ // Connect to cache server
+ client, conn, err := cdc.Connect("127.0.0.1:50051")
+ if err != nil {
+  log.Fatalf("Failed to connect: %v", err)
+ }
+ defer conn.Close()
+
+ // Set a key-value pair
+ err = cdc.Set("10.14.203.14", "8765", client)
+ if err != nil {
+  log.Fatalf("Failed to set: %v", err)
+ }
+
+ // Get a value by key
+ value, err := cdc.Get("10.14.203.14", client)
+ if err != nil {
+  log.Fatalf("Failed to get: %v", err)
+ }
+
+ if value != "" {
+  fmt.Printf("Value: %s\n", value)
+ } else {
+  fmt.Println("Key not found")
+ }
 }
 ```
 
