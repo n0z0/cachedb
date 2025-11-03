@@ -9,7 +9,8 @@ import (
 )
 
 func Connect() (cachepb.CacheClient, *grpc.ClientConn, error) {
-	conn, err := grpc.NewClient("ipv4:127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// Use a standard host:port target; the "ipv4:" prefix is not a valid gRPC target
+	conn, err := grpc.NewClient("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
