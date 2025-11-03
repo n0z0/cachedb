@@ -8,13 +8,13 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func Connect() (cachepb.CacheClient, *grpc.ClientConn, error) {
-	conn, err := grpc.NewClient("127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+func Connect() (cachepb.CacheClient, error) {
+	conn, err := grpc.NewClient("ipv4:127.0.0.1:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	client := cachepb.NewCacheClient(conn)
-	return client, conn, nil
+	return client, nil
 }
 func Set(key, value string, client cachepb.CacheClient) error {
 	_, err := client.Set(context.Background(), &cachepb.SetRequest{
