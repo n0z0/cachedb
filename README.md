@@ -51,7 +51,7 @@ import (
 
 func main() {
     // Connect to cache server
-    client, conn, err := cdc.Connect()
+    client, conn, err := cdc.Connect("127.0.0.1:50051")
     if err != nil {
         log.Fatalf("Failed to connect: %v", err)
     }
@@ -79,7 +79,7 @@ func main() {
 
 ### API Reference
 
-#### `Connect() (cachepb.CacheClient, error)`
+#### `Connect(address string) (cachepb.CacheClient, error)`
 
 Establishes a connection to the cache server.
 
