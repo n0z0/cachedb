@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package cache;
+
+option go_package = "/cachepb";
+
+service Cache {
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Set(SetRequest) returns (SetResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+}
+
+message GetRequest {
+  string key = 1;
+}
+
+message GetResponse {
+  bytes value = 1;
+  bool found = 2;
+}
+
+message SetRequest {
+  string key = 1;
+  bytes value = 2;
+  int32 ttl_seconds = 3; // 0 = tanpa TTL
+}
+
+message SetResponse {
+  bool ok = 1;
+}
+
+message DeleteRequest {
+  string key = 1;
+}
+
+message DeleteResponse {
+  bool ok = 1;
+}
