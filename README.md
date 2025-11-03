@@ -19,3 +19,10 @@ Install:
    ```sh
    protoc --go_out=. --go-grpc_out=. cache.proto
    ```
+
+## Release tag
+
+```sh
+git tag v0.1.0
+git push origin --tags
+```
