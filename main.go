@@ -60,7 +60,7 @@ func (s *cacheServer) Delete(ctx context.Context, req *cachepb.DeleteRequest) (*
 func main() {
 	fc := freecache.NewCache(cacheSizeBytes)
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", "127.0.0.1:50051")
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
@@ -68,7 +68,7 @@ func main() {
 	s := grpc.NewServer()
 	cachepb.RegisterCacheServer(s, &cacheServer{cache: fc})
 
-	log.Println("gRPC cache server on :50051")
+	log.Println("gRPC cache server on 127.0.0.1:50051")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("serve: %v", err)
 	}
