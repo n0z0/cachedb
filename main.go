@@ -68,7 +68,7 @@ func main() {
 	s := grpc.NewServer()
 	cachepb.RegisterCacheServer(s, &cacheServer{cache: fc})
 
-	log.Println("gRPC cache server on 127.0.0.1:50051")
+	log.Println("CacheDB server on 127.0.0.1:50051")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("serve: %v", err)
 	}
