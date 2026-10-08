@@ -473,6 +473,16 @@ func handleCLIMode() bool {
 		if dossier.FileSoftware != "" {
 			fmt.Printf("Uploaded Software : %s\n", dossier.FileSoftware)
 		}
+		if rdns, err := cdc.Get("actor:rdns:"+*actorIP, client); err == nil && rdns != "" {
+			fmt.Printf("Reverse DNS (PTR) : %s\n", rdns)
+		}
+		if user, err := cdc.Get("actor:classroot:user:"+*actorIP, client); err == nil && user != "" {
+			pass, _ := cdc.Get("actor:classroot:pass:"+*actorIP, client)
+			fmt.Printf("Harvested Creds   : %s : %s\n", user, pass)
+		}
+		if gpu, err := cdc.Get("actor:gpu:"+*actorIP, client); err == nil && gpu != "" {
+			fmt.Printf("GPU Hardware ID   : %s\n", gpu)
+		}
 		return true
 	}
 
