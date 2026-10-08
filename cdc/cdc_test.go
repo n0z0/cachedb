@@ -18,7 +18,9 @@ type MockCacheClient struct {
 	clearFunc    func(ctx context.Context, req interface{}, opts ...grpc.CallOption) (interface{}, error)
 	mgetFunc     func(ctx context.Context, req *cachepb.MGetRequest, opts ...grpc.CallOption) (*cachepb.MGetResponse, error)
 	msetFunc     func(ctx context.Context, req *cachepb.MSetRequest, opts ...grpc.CallOption) (*cachepb.MSetResponse, error)
-	getStatsFunc func(ctx context.Context, req *cachepb.StatsRequest, opts ...grpc.CallOption) (*cachepb.StatsResponse, error)
+	getStatsFunc   func(ctx context.Context, req *cachepb.StatsRequest, opts ...grpc.CallOption) (*cachepb.StatsResponse, error)
+	getActorFunc   func(ctx context.Context, req *cachepb.ActorRequest, opts ...grpc.CallOption) (*cachepb.ActorResponse, error)
+	listActorsFunc func(ctx context.Context, req *cachepb.ListActorsRequest, opts ...grpc.CallOption) (*cachepb.ListActorsResponse, error)
 }
 
 func (m *MockCacheClient) Set(ctx context.Context, req *cachepb.SetRequest, opts ...grpc.CallOption) (*cachepb.SetResponse, error) {
@@ -68,6 +70,20 @@ func (m *MockCacheClient) GetStats(ctx context.Context, req *cachepb.StatsReques
 		return m.getStatsFunc(ctx, req, opts...)
 	}
 	return &cachepb.StatsResponse{}, nil
+}
+
+func (m *MockCacheClient) GetActor(ctx context.Context, req *cachepb.ActorRequest, opts ...grpc.CallOption) (*cachepb.ActorResponse, error) {
+	if m.getActorFunc != nil {
+		return m.getActorFunc(ctx, req, opts...)
+	}
+	return &cachepb.ActorResponse{Found: false}, nil
+}
+
+func (m *MockCacheClient) ListActors(ctx context.Context, req *cachepb.ListActorsRequest, opts ...grpc.CallOption) (*cachepb.ListActorsResponse, error) {
+	if m.listActorsFunc != nil {
+		return m.listActorsFunc(ctx, req, opts...)
+	}
+	return &cachepb.ListActorsResponse{}, nil
 }
 
 func TestConnect(t *testing.T) {
@@ -520,5 +536,71 @@ func TestGetStats(t *testing.T) {
 	}
 	if stats.EntryCount != 42 || stats.HitCount != 100 {
 		t.Errorf("Unexpected stats: %+v", stats)
+	}
+}
+
+func TestGetActor(t *testing.T) {
+	mockClient := &MockCacheClient{
+		getActorFunc: func(ctx context.Context, req *cachepb.ActorRequest, opts ...grpc.CallOption) (*cachepb.ActorResponse, error) {
+			if req.Ip == "192.168.1.150" {
+				return &cachepb.ActorResponse{
+					Found: true,
+					Dossier: &cachepb.ActorDossier{
+						Ip:            "192.168.1.150",
+						KnockPort:     "8080",
+						RiskScore:     "90",
+						Severity:      "CRITICAL",
+						TargetService: "RDP",
+						ScannerTool:   "Nmap (Stealth SYN Scan)",
+					},
+				}, nil
+			}
+			return &cachepb.ActorResponse{Found: false}, nil
+		},
+	}
+
+	dossier, found, err := GetActor("192.168.1.150", mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if !found || dossier == nil {
+		t.Fatalf("Expected actor to be found")
+	}
+	if dossier.Ip != "192.168.1.150" || dossier.Severity != "CRITICAL" {
+		t.Errorf("Unexpected dossier: %+v", dossier)
+	}
+
+	// Test not found
+	_, foundMissing, err := GetActor("10.0.0.1", mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if foundMissing {
+		t.Errorf("Expected actor not to be found")
+	}
+}
+
+func TestListActors(t *testing.T) {
+	mockClient := &MockCacheClient{
+		listActorsFunc: func(ctx context.Context, req *cachepb.ListActorsRequest, opts ...grpc.CallOption) (*cachepb.ListActorsResponse, error) {
+			return &cachepb.ListActorsResponse{
+				Actors: []*cachepb.ActorDossier{
+					{Ip: "192.168.1.100", RiskScore: "75", Severity: "HIGH"},
+					{Ip: "192.168.1.150", RiskScore: "90", Severity: "CRITICAL"},
+				},
+				TotalCount: 2,
+			}, nil
+		},
+	}
+
+	actors, err := ListActors(mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if len(actors) != 2 {
+		t.Fatalf("Expected 2 actors, got %d", len(actors))
+	}
+	if actors[0].Ip != "192.168.1.100" || actors[1].Severity != "CRITICAL" {
+		t.Errorf("Unexpected actors: %+v", actors)
 	}
 }

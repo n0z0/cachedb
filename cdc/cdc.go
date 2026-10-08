@@ -94,3 +94,21 @@ func MGet(keys []string, client cachepb.CacheClient) (map[string]string, error) 
 func GetStats(client cachepb.CacheClient) (*cachepb.StatsResponse, error) {
 	return client.GetStats(context.Background(), &cachepb.StatsRequest{})
 }
+
+func GetActor(ip string, client cachepb.CacheClient) (*cachepb.ActorDossier, bool, error) {
+	resp, err := client.GetActor(context.Background(), &cachepb.ActorRequest{
+		Ip: ip,
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	return resp.Dossier, resp.Found, nil
+}
+
+func ListActors(client cachepb.CacheClient) ([]*cachepb.ActorDossier, error) {
+	resp, err := client.ListActors(context.Background(), &cachepb.ListActorsRequest{})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Actors, nil
+}

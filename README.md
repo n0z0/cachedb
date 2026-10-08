@@ -56,25 +56,34 @@ cachedb -addr 127.0.0.1:50051
 
 ---
 
-## Mode CLI / Observability
+## Mode CLI / Observability & Threat Intelligence
 
-Binary `cachedb` juga dapat digunakan sebagai tool CLI untuk menginspeksi, memonitor metrik, atau menguji nilai cache langsung dari terminal tanpa perlu menjalankan program terpisah:
+Binary `cachedb` juga dapat digunakan sebagai tool CLI untuk menginspeksi, memonitor metrik, melihat intelijen ancaman penyerang, atau menguji nilai cache langsung dari terminal tanpa perlu menjalankan program terpisah:
 
 ```sh
-# Melihat statistik server (Entry count, Hit/Miss, Hit Rate %, Memory limit)
+# 1. Melihat statistik server (Entry count, Hit/Miss, Hit Rate %, Memory limit)
 cachedb -stats
 
-# Mengambil nilai suatu key
+# 2. Live Active Threat Registry (Melihat tabel live semua IP penyerang aktif di memory)
+cachedb -actors
+
+# 3. Attacker Threat Dossier (Profil ancaman lengkap untuk sebuah IP)
+cachedb -actor 192.168.1.150
+
+# 4. Firewall Blocklist Exporter (Ekspor daftar IP HIGH/CRITICAL untuk iptables/Windows Firewall)
+cachedb -blocklist
+
+# 5. Mengambil nilai suatu key
 cachedb -get 192.168.1.150
 
-# Menulis / mengupdate key
+# 6. Menulis / mengupdate key
 cachedb -set testkey -val "hello-world"
 
-# Menghapus key
+# 7. Menghapus key
 cachedb -del testkey
 
 # Target ke host/port tertentu (default: 127.0.0.1:50051)
-cachedb -target 127.0.0.1:50052 -stats
+cachedb -target 127.0.0.1:50052 -actors
 ```
 
 ---

@@ -11,6 +11,8 @@ service Cache {
   rpc MGet(MGetRequest) returns (MGetResponse);
   rpc MSet(MSetRequest) returns (MSetResponse);
   rpc GetStats(StatsRequest) returns (StatsResponse);
+  rpc GetActor(ActorRequest) returns (ActorResponse);
+  rpc ListActors(ListActorsRequest) returns (ListActorsResponse);
 }
 
 message GetRequest {
@@ -79,4 +81,37 @@ message StatsResponse {
   int64 evacuate_count = 5;
   int64 expired_count = 6;
   int64 memory_limit_bytes = 7;
+}
+
+message ActorRequest {
+  string ip = 1;
+}
+
+message ActorDossier {
+  string ip = 1;
+  string knock_port = 2;
+  string syn_hash = 3;
+  string risk_score = 4;
+  string severity = 5;
+  string target_service = 6;
+  string intent_category = 7;
+  string scan_velocity = 8;
+  string estimated_os = 9;
+  string scanner_tool = 10;
+  string scan_hits = 11;
+  string last_activity = 12;
+  string file_author = 13;
+  string file_software = 14;
+}
+
+message ActorResponse {
+  bool found = 1;
+  ActorDossier dossier = 2;
+}
+
+message ListActorsRequest {}
+
+message ListActorsResponse {
+  repeated ActorDossier actors = 1;
+  int32 total_count = 2;
 }

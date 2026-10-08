@@ -19,12 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Cache_Get_FullMethodName      = "/cache.Cache/Get"
-	Cache_Set_FullMethodName      = "/cache.Cache/Set"
-	Cache_Delete_FullMethodName   = "/cache.Cache/Delete"
-	Cache_MGet_FullMethodName     = "/cache.Cache/MGet"
-	Cache_MSet_FullMethodName     = "/cache.Cache/MSet"
-	Cache_GetStats_FullMethodName = "/cache.Cache/GetStats"
+	Cache_Get_FullMethodName        = "/cache.Cache/Get"
+	Cache_Set_FullMethodName        = "/cache.Cache/Set"
+	Cache_Delete_FullMethodName     = "/cache.Cache/Delete"
+	Cache_MGet_FullMethodName       = "/cache.Cache/MGet"
+	Cache_MSet_FullMethodName       = "/cache.Cache/MSet"
+	Cache_GetStats_FullMethodName   = "/cache.Cache/GetStats"
+	Cache_GetActor_FullMethodName   = "/cache.Cache/GetActor"
+	Cache_ListActors_FullMethodName = "/cache.Cache/ListActors"
 )
 
 // CacheClient is the client API for Cache service.
@@ -37,6 +39,8 @@ type CacheClient interface {
 	MGet(ctx context.Context, in *MGetRequest, opts ...grpc.CallOption) (*MGetResponse, error)
 	MSet(ctx context.Context, in *MSetRequest, opts ...grpc.CallOption) (*MSetResponse, error)
 	GetStats(ctx context.Context, in *StatsRequest, opts ...grpc.CallOption) (*StatsResponse, error)
+	GetActor(ctx context.Context, in *ActorRequest, opts ...grpc.CallOption) (*ActorResponse, error)
+	ListActors(ctx context.Context, in *ListActorsRequest, opts ...grpc.CallOption) (*ListActorsResponse, error)
 }
 
 type cacheClient struct {
@@ -107,6 +111,26 @@ func (c *cacheClient) GetStats(ctx context.Context, in *StatsRequest, opts ...gr
 	return out, nil
 }
 
+func (c *cacheClient) GetActor(ctx context.Context, in *ActorRequest, opts ...grpc.CallOption) (*ActorResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ActorResponse)
+	err := c.cc.Invoke(ctx, Cache_GetActor_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cacheClient) ListActors(ctx context.Context, in *ListActorsRequest, opts ...grpc.CallOption) (*ListActorsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListActorsResponse)
+	err := c.cc.Invoke(ctx, Cache_ListActors_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CacheServer is the server API for Cache service.
 // All implementations must embed UnimplementedCacheServer
 // for forward compatibility.
@@ -117,6 +141,8 @@ type CacheServer interface {
 	MGet(context.Context, *MGetRequest) (*MGetResponse, error)
 	MSet(context.Context, *MSetRequest) (*MSetResponse, error)
 	GetStats(context.Context, *StatsRequest) (*StatsResponse, error)
+	GetActor(context.Context, *ActorRequest) (*ActorResponse, error)
+	ListActors(context.Context, *ListActorsRequest) (*ListActorsResponse, error)
 	mustEmbedUnimplementedCacheServer()
 }
 
@@ -144,6 +170,12 @@ func (UnimplementedCacheServer) MSet(context.Context, *MSetRequest) (*MSetRespon
 }
 func (UnimplementedCacheServer) GetStats(context.Context, *StatsRequest) (*StatsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetStats not implemented")
+}
+func (UnimplementedCacheServer) GetActor(context.Context, *ActorRequest) (*ActorResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetActor not implemented")
+}
+func (UnimplementedCacheServer) ListActors(context.Context, *ListActorsRequest) (*ListActorsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListActors not implemented")
 }
 func (UnimplementedCacheServer) mustEmbedUnimplementedCacheServer() {}
 func (UnimplementedCacheServer) testEmbeddedByValue()               {}
@@ -274,6 +306,42 @@ func _Cache_GetStats_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Cache_GetActor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).GetActor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Cache_GetActor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).GetActor(ctx, req.(*ActorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Cache_ListActors_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListActorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CacheServer).ListActors(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Cache_ListActors_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CacheServer).ListActors(ctx, req.(*ListActorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Cache_ServiceDesc is the grpc.ServiceDesc for Cache service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +372,14 @@ var Cache_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStats",
 			Handler:    _Cache_GetStats_Handler,
+		},
+		{
+			MethodName: "GetActor",
+			Handler:    _Cache_GetActor_Handler,
+		},
+		{
+			MethodName: "ListActors",
+			Handler:    _Cache_ListActors_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

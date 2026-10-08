@@ -741,6 +741,338 @@ func (x *StatsResponse) GetMemoryLimitBytes() int64 {
 	return 0
 }
 
+type ActorRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ip            string                 `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActorRequest) Reset() {
+	*x = ActorRequest{}
+	mi := &file_cache_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActorRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActorRequest) ProtoMessage() {}
+
+func (x *ActorRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_cache_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActorRequest.ProtoReflect.Descriptor instead.
+func (*ActorRequest) Descriptor() ([]byte, []int) {
+	return file_cache_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ActorRequest) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+type ActorDossier struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Ip             string                 `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
+	KnockPort      string                 `protobuf:"bytes,2,opt,name=knock_port,json=knockPort,proto3" json:"knock_port,omitempty"`
+	SynHash        string                 `protobuf:"bytes,3,opt,name=syn_hash,json=synHash,proto3" json:"syn_hash,omitempty"`
+	RiskScore      string                 `protobuf:"bytes,4,opt,name=risk_score,json=riskScore,proto3" json:"risk_score,omitempty"`
+	Severity       string                 `protobuf:"bytes,5,opt,name=severity,proto3" json:"severity,omitempty"`
+	TargetService  string                 `protobuf:"bytes,6,opt,name=target_service,json=targetService,proto3" json:"target_service,omitempty"`
+	IntentCategory string                 `protobuf:"bytes,7,opt,name=intent_category,json=intentCategory,proto3" json:"intent_category,omitempty"`
+	ScanVelocity   string                 `protobuf:"bytes,8,opt,name=scan_velocity,json=scanVelocity,proto3" json:"scan_velocity,omitempty"`
+	EstimatedOs    string                 `protobuf:"bytes,9,opt,name=estimated_os,json=estimatedOs,proto3" json:"estimated_os,omitempty"`
+	ScannerTool    string                 `protobuf:"bytes,10,opt,name=scanner_tool,json=scannerTool,proto3" json:"scanner_tool,omitempty"`
+	ScanHits       string                 `protobuf:"bytes,11,opt,name=scan_hits,json=scanHits,proto3" json:"scan_hits,omitempty"`
+	LastActivity   string                 `protobuf:"bytes,12,opt,name=last_activity,json=lastActivity,proto3" json:"last_activity,omitempty"`
+	FileAuthor     string                 `protobuf:"bytes,13,opt,name=file_author,json=fileAuthor,proto3" json:"file_author,omitempty"`
+	FileSoftware   string                 `protobuf:"bytes,14,opt,name=file_software,json=fileSoftware,proto3" json:"file_software,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ActorDossier) Reset() {
+	*x = ActorDossier{}
+	mi := &file_cache_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActorDossier) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActorDossier) ProtoMessage() {}
+
+func (x *ActorDossier) ProtoReflect() protoreflect.Message {
+	mi := &file_cache_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActorDossier.ProtoReflect.Descriptor instead.
+func (*ActorDossier) Descriptor() ([]byte, []int) {
+	return file_cache_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ActorDossier) GetIp() string {
+	if x != nil {
+		return x.Ip
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetKnockPort() string {
+	if x != nil {
+		return x.KnockPort
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetSynHash() string {
+	if x != nil {
+		return x.SynHash
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetRiskScore() string {
+	if x != nil {
+		return x.RiskScore
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetSeverity() string {
+	if x != nil {
+		return x.Severity
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetTargetService() string {
+	if x != nil {
+		return x.TargetService
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetIntentCategory() string {
+	if x != nil {
+		return x.IntentCategory
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetScanVelocity() string {
+	if x != nil {
+		return x.ScanVelocity
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetEstimatedOs() string {
+	if x != nil {
+		return x.EstimatedOs
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetScannerTool() string {
+	if x != nil {
+		return x.ScannerTool
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetScanHits() string {
+	if x != nil {
+		return x.ScanHits
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetLastActivity() string {
+	if x != nil {
+		return x.LastActivity
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetFileAuthor() string {
+	if x != nil {
+		return x.FileAuthor
+	}
+	return ""
+}
+
+func (x *ActorDossier) GetFileSoftware() string {
+	if x != nil {
+		return x.FileSoftware
+	}
+	return ""
+}
+
+type ActorResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Found         bool                   `protobuf:"varint,1,opt,name=found,proto3" json:"found,omitempty"`
+	Dossier       *ActorDossier          `protobuf:"bytes,2,opt,name=dossier,proto3" json:"dossier,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ActorResponse) Reset() {
+	*x = ActorResponse{}
+	mi := &file_cache_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ActorResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ActorResponse) ProtoMessage() {}
+
+func (x *ActorResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_cache_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ActorResponse.ProtoReflect.Descriptor instead.
+func (*ActorResponse) Descriptor() ([]byte, []int) {
+	return file_cache_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ActorResponse) GetFound() bool {
+	if x != nil {
+		return x.Found
+	}
+	return false
+}
+
+func (x *ActorResponse) GetDossier() *ActorDossier {
+	if x != nil {
+		return x.Dossier
+	}
+	return nil
+}
+
+type ListActorsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListActorsRequest) Reset() {
+	*x = ListActorsRequest{}
+	mi := &file_cache_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListActorsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListActorsRequest) ProtoMessage() {}
+
+func (x *ListActorsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_cache_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListActorsRequest.ProtoReflect.Descriptor instead.
+func (*ListActorsRequest) Descriptor() ([]byte, []int) {
+	return file_cache_proto_rawDescGZIP(), []int{17}
+}
+
+type ListActorsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Actors        []*ActorDossier        `protobuf:"bytes,1,rep,name=actors,proto3" json:"actors,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListActorsResponse) Reset() {
+	*x = ListActorsResponse{}
+	mi := &file_cache_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListActorsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListActorsResponse) ProtoMessage() {}
+
+func (x *ListActorsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_cache_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListActorsResponse.ProtoReflect.Descriptor instead.
+func (*ListActorsResponse) Descriptor() ([]byte, []int) {
+	return file_cache_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ListActorsResponse) GetActors() []*ActorDossier {
+	if x != nil {
+		return x.Actors
+	}
+	return nil
+}
+
+func (x *ListActorsResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
 var File_cache_proto protoreflect.FileDescriptor
 
 const file_cache_proto_rawDesc = "" +
@@ -792,14 +1124,46 @@ const file_cache_proto_rawDesc = "" +
 	"\bhit_rate\x18\x04 \x01(\x01R\ahitRate\x12%\n" +
 	"\x0eevacuate_count\x18\x05 \x01(\x03R\revacuateCount\x12#\n" +
 	"\rexpired_count\x18\x06 \x01(\x03R\fexpiredCount\x12,\n" +
-	"\x12memory_limit_bytes\x18\a \x01(\x03R\x10memoryLimitBytes2\xb3\x02\n" +
+	"\x12memory_limit_bytes\x18\a \x01(\x03R\x10memoryLimitBytes\"\x1e\n" +
+	"\fActorRequest\x12\x0e\n" +
+	"\x02ip\x18\x01 \x01(\tR\x02ip\"\xd6\x03\n" +
+	"\fActorDossier\x12\x0e\n" +
+	"\x02ip\x18\x01 \x01(\tR\x02ip\x12\x1d\n" +
+	"\n" +
+	"knock_port\x18\x02 \x01(\tR\tknockPort\x12\x19\n" +
+	"\bsyn_hash\x18\x03 \x01(\tR\asynHash\x12\x1d\n" +
+	"\n" +
+	"risk_score\x18\x04 \x01(\tR\triskScore\x12\x1a\n" +
+	"\bseverity\x18\x05 \x01(\tR\bseverity\x12%\n" +
+	"\x0etarget_service\x18\x06 \x01(\tR\rtargetService\x12'\n" +
+	"\x0fintent_category\x18\a \x01(\tR\x0eintentCategory\x12#\n" +
+	"\rscan_velocity\x18\b \x01(\tR\fscanVelocity\x12!\n" +
+	"\festimated_os\x18\t \x01(\tR\vestimatedOs\x12!\n" +
+	"\fscanner_tool\x18\n" +
+	" \x01(\tR\vscannerTool\x12\x1b\n" +
+	"\tscan_hits\x18\v \x01(\tR\bscanHits\x12#\n" +
+	"\rlast_activity\x18\f \x01(\tR\flastActivity\x12\x1f\n" +
+	"\vfile_author\x18\r \x01(\tR\n" +
+	"fileAuthor\x12#\n" +
+	"\rfile_software\x18\x0e \x01(\tR\ffileSoftware\"T\n" +
+	"\rActorResponse\x12\x14\n" +
+	"\x05found\x18\x01 \x01(\bR\x05found\x12-\n" +
+	"\adossier\x18\x02 \x01(\v2\x13.cache.ActorDossierR\adossier\"\x13\n" +
+	"\x11ListActorsRequest\"b\n" +
+	"\x12ListActorsResponse\x12+\n" +
+	"\x06actors\x18\x01 \x03(\v2\x13.cache.ActorDossierR\x06actors\x12\x1f\n" +
+	"\vtotal_count\x18\x02 \x01(\x05R\n" +
+	"totalCount2\xad\x03\n" +
 	"\x05Cache\x12,\n" +
 	"\x03Get\x12\x11.cache.GetRequest\x1a\x12.cache.GetResponse\x12,\n" +
 	"\x03Set\x12\x11.cache.SetRequest\x1a\x12.cache.SetResponse\x125\n" +
 	"\x06Delete\x12\x14.cache.DeleteRequest\x1a\x15.cache.DeleteResponse\x12/\n" +
 	"\x04MGet\x12\x12.cache.MGetRequest\x1a\x13.cache.MGetResponse\x12/\n" +
 	"\x04MSet\x12\x12.cache.MSetRequest\x1a\x13.cache.MSetResponse\x125\n" +
-	"\bGetStats\x12\x13.cache.StatsRequest\x1a\x14.cache.StatsResponseB\n" +
+	"\bGetStats\x12\x13.cache.StatsRequest\x1a\x14.cache.StatsResponse\x125\n" +
+	"\bGetActor\x12\x13.cache.ActorRequest\x1a\x14.cache.ActorResponse\x12A\n" +
+	"\n" +
+	"ListActors\x12\x18.cache.ListActorsRequest\x1a\x19.cache.ListActorsResponseB\n" +
 	"Z\b/cachepbb\x06proto3"
 
 var (
@@ -814,43 +1178,54 @@ func file_cache_proto_rawDescGZIP() []byte {
 	return file_cache_proto_rawDescData
 }
 
-var file_cache_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_cache_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_cache_proto_goTypes = []any{
-	(*GetRequest)(nil),     // 0: cache.GetRequest
-	(*GetResponse)(nil),    // 1: cache.GetResponse
-	(*SetRequest)(nil),     // 2: cache.SetRequest
-	(*SetResponse)(nil),    // 3: cache.SetResponse
-	(*DeleteRequest)(nil),  // 4: cache.DeleteRequest
-	(*DeleteResponse)(nil), // 5: cache.DeleteResponse
-	(*MGetRequest)(nil),    // 6: cache.MGetRequest
-	(*KeyValueItem)(nil),   // 7: cache.KeyValueItem
-	(*MGetResponse)(nil),   // 8: cache.MGetResponse
-	(*SetItem)(nil),        // 9: cache.SetItem
-	(*MSetRequest)(nil),    // 10: cache.MSetRequest
-	(*MSetResponse)(nil),   // 11: cache.MSetResponse
-	(*StatsRequest)(nil),   // 12: cache.StatsRequest
-	(*StatsResponse)(nil),  // 13: cache.StatsResponse
+	(*GetRequest)(nil),         // 0: cache.GetRequest
+	(*GetResponse)(nil),        // 1: cache.GetResponse
+	(*SetRequest)(nil),         // 2: cache.SetRequest
+	(*SetResponse)(nil),        // 3: cache.SetResponse
+	(*DeleteRequest)(nil),      // 4: cache.DeleteRequest
+	(*DeleteResponse)(nil),     // 5: cache.DeleteResponse
+	(*MGetRequest)(nil),        // 6: cache.MGetRequest
+	(*KeyValueItem)(nil),       // 7: cache.KeyValueItem
+	(*MGetResponse)(nil),       // 8: cache.MGetResponse
+	(*SetItem)(nil),            // 9: cache.SetItem
+	(*MSetRequest)(nil),        // 10: cache.MSetRequest
+	(*MSetResponse)(nil),       // 11: cache.MSetResponse
+	(*StatsRequest)(nil),       // 12: cache.StatsRequest
+	(*StatsResponse)(nil),      // 13: cache.StatsResponse
+	(*ActorRequest)(nil),       // 14: cache.ActorRequest
+	(*ActorDossier)(nil),       // 15: cache.ActorDossier
+	(*ActorResponse)(nil),      // 16: cache.ActorResponse
+	(*ListActorsRequest)(nil),  // 17: cache.ListActorsRequest
+	(*ListActorsResponse)(nil), // 18: cache.ListActorsResponse
 }
 var file_cache_proto_depIdxs = []int32{
 	7,  // 0: cache.MGetResponse.items:type_name -> cache.KeyValueItem
 	9,  // 1: cache.MSetRequest.items:type_name -> cache.SetItem
-	0,  // 2: cache.Cache.Get:input_type -> cache.GetRequest
-	2,  // 3: cache.Cache.Set:input_type -> cache.SetRequest
-	4,  // 4: cache.Cache.Delete:input_type -> cache.DeleteRequest
-	6,  // 5: cache.Cache.MGet:input_type -> cache.MGetRequest
-	10, // 6: cache.Cache.MSet:input_type -> cache.MSetRequest
-	12, // 7: cache.Cache.GetStats:input_type -> cache.StatsRequest
-	1,  // 8: cache.Cache.Get:output_type -> cache.GetResponse
-	3,  // 9: cache.Cache.Set:output_type -> cache.SetResponse
-	5,  // 10: cache.Cache.Delete:output_type -> cache.DeleteResponse
-	8,  // 11: cache.Cache.MGet:output_type -> cache.MGetResponse
-	11, // 12: cache.Cache.MSet:output_type -> cache.MSetResponse
-	13, // 13: cache.Cache.GetStats:output_type -> cache.StatsResponse
-	8,  // [8:14] is the sub-list for method output_type
-	2,  // [2:8] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	15, // 2: cache.ActorResponse.dossier:type_name -> cache.ActorDossier
+	15, // 3: cache.ListActorsResponse.actors:type_name -> cache.ActorDossier
+	0,  // 4: cache.Cache.Get:input_type -> cache.GetRequest
+	2,  // 5: cache.Cache.Set:input_type -> cache.SetRequest
+	4,  // 6: cache.Cache.Delete:input_type -> cache.DeleteRequest
+	6,  // 7: cache.Cache.MGet:input_type -> cache.MGetRequest
+	10, // 8: cache.Cache.MSet:input_type -> cache.MSetRequest
+	12, // 9: cache.Cache.GetStats:input_type -> cache.StatsRequest
+	14, // 10: cache.Cache.GetActor:input_type -> cache.ActorRequest
+	17, // 11: cache.Cache.ListActors:input_type -> cache.ListActorsRequest
+	1,  // 12: cache.Cache.Get:output_type -> cache.GetResponse
+	3,  // 13: cache.Cache.Set:output_type -> cache.SetResponse
+	5,  // 14: cache.Cache.Delete:output_type -> cache.DeleteResponse
+	8,  // 15: cache.Cache.MGet:output_type -> cache.MGetResponse
+	11, // 16: cache.Cache.MSet:output_type -> cache.MSetResponse
+	13, // 17: cache.Cache.GetStats:output_type -> cache.StatsResponse
+	16, // 18: cache.Cache.GetActor:output_type -> cache.ActorResponse
+	18, // 19: cache.Cache.ListActors:output_type -> cache.ListActorsResponse
+	12, // [12:20] is the sub-list for method output_type
+	4,  // [4:12] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_cache_proto_init() }
@@ -864,7 +1239,7 @@ func file_cache_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cache_proto_rawDesc), len(file_cache_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
