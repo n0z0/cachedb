@@ -73,13 +73,16 @@ cachedb -actor 192.168.1.150
 # 4. Firewall Blocklist Exporter (Ekspor daftar IP HIGH/CRITICAL untuk iptables/Windows Firewall)
 cachedb -blocklist
 
-# 5. Mengambil nilai suatu key
+# 5. STIX 2.1 Threat Intel Bundle Exporter (Standar internasional untuk MISP / OpenCTI / Splunk)
+cachedb -export-stix
+
+# 6. Mengambil nilai suatu key
 cachedb -get 192.168.1.150
 
-# 6. Menulis / mengupdate key
+# 7. Menulis / mengupdate key
 cachedb -set testkey -val "hello-world"
 
-# 7. Menghapus key
+# 8. Menghapus key
 cachedb -del testkey
 
 # Target ke host/port tertentu (default: 127.0.0.1:50051)

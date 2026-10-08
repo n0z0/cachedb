@@ -2,13 +2,19 @@ package main
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -35,6 +41,8 @@ var (
 	actorIP         = flag.String("actor", "", "CLI mode: Tampilkan Threat Actor Dossier lengkap untuk sebuah IP")
 	listActors      = flag.Bool("actors", false, "CLI mode: Tampilkan daftar semua threat actor aktif di CacheDB")
 	exportBlocklist = flag.Bool("blocklist", false, "CLI mode: Ekspor daftar IP ancaman (HIGH/CRITICAL) untuk firewall blocklist")
+	exportSTIX      = flag.Bool("export-stix", false, "CLI mode: Ekspor seluruh threat intelligence ke format STIX 2.1 JSON bundle")
+	snapshotFlag    = flag.String("snapshot", "cachedb_snapshot.json", "Lokasi file persistence snapshot (kosongkan untuk nonaktifkan)")
 	target          = flag.String("target", "127.0.0.1:50051", "Target address server untuk CLI mode")
 )
 
@@ -252,8 +260,151 @@ func (s *cacheServer) ListActors(ctx context.Context, req *cachepb.ListActorsReq
 	}, nil
 }
 
+func (s *cacheServer) saveSnapshot(filePath string) {
+	if filePath == "" {
+		return
+	}
+	allIPs := globalActors.allIPs()
+	var entries []SnapshotEntry
+
+	for _, ip := range allIPs {
+		keys := []string{
+			ip,
+			"actor:syn_hash:" + ip,
+			"actor:risk:" + ip,
+			"actor:severity:" + ip,
+			"actor:target_service:" + ip,
+			"actor:intent:" + ip,
+			"actor:velocity:" + ip,
+			"actor:os:" + ip,
+			"actor:scanner:" + ip,
+			"actor:scan_hits:" + ip,
+			"actor:last_scan:" + ip,
+			"meta:author:" + ip,
+			"meta:software:" + ip,
+		}
+		for _, k := range keys {
+			val, err := s.cache.Get([]byte(k))
+			if err == nil && len(val) > 0 {
+				entries = append(entries, SnapshotEntry{
+					Key:        k,
+					Value:      string(val),
+					TTLSeconds: s.defaultTTL,
+				})
+			}
+		}
+	}
+
+	snap := CacheSnapshot{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Entries:   entries,
+		Actors:    allIPs,
+	}
+
+	data, err := json.MarshalIndent(snap, "", "  ")
+	if err != nil {
+		log.Printf("[WARN] Gagal serialize snapshot: %v", err)
+		return
+	}
+
+	tmpFile := filePath + ".tmp"
+	if err := os.WriteFile(tmpFile, data, 0644); err == nil {
+		_ = os.Rename(tmpFile, filePath)
+		log.Printf("[*] Snapshot tersimpan -> %s (%d entries, %d actors)", filePath, len(entries), len(allIPs))
+	}
+}
+
+func (s *cacheServer) loadSnapshot(filePath string) {
+	if filePath == "" {
+		return
+	}
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return // File tidak ada, wajar saat startup pertama kali
+	}
+
+	var snap CacheSnapshot
+	if err := json.Unmarshal(data, &snap); err != nil {
+		log.Printf("[WARN] Gagal membaca snapshot %s: %v", filePath, err)
+		return
+	}
+
+	loaded := 0
+	for _, entry := range snap.Entries {
+		ttl := entry.TTLSeconds
+		if ttl <= 0 {
+			ttl = s.defaultTTL
+		}
+		if err := s.cache.Set([]byte(entry.Key), []byte(entry.Value), ttl); err == nil {
+			loaded++
+		}
+	}
+	for _, ip := range snap.Actors {
+		globalActors.registerIP(ip)
+	}
+
+	log.Printf("[*] Snapshot dimuat dari %s (%d entries, %d actors)", filePath, loaded, len(snap.Actors))
+}
+
+type SnapshotEntry struct {
+	Key        string `json:"key"`
+	Value      string `json:"value"`
+	TTLSeconds int    `json:"ttl_seconds"`
+}
+
+type CacheSnapshot struct {
+	Timestamp string          `json:"timestamp"`
+	Entries   []SnapshotEntry `json:"entries"`
+	Actors    []string        `json:"actors"`
+}
+
+func md5Hex(s string) string {
+	h := md5.Sum([]byte(s))
+	hexStr := hex.EncodeToString(h[:])
+	return fmt.Sprintf("%s-%s-%s-%s-%s", hexStr[0:8], hexStr[8:12], hexStr[12:16], hexStr[16:20], hexStr[20:32])
+}
+
+func buildSTIXBundle(actors []*cachepb.ActorDossier) map[string]interface{} {
+	now := time.Now().UTC().Format(time.RFC3339)
+	objects := make([]map[string]interface{}, 0, len(actors))
+
+	for _, a := range actors {
+		conf := 50
+		if a.RiskScore != "" {
+			if sc, err := strconv.Atoi(a.RiskScore); err == nil {
+				conf = sc
+			}
+		}
+		desc := fmt.Sprintf("Honeypot probe detected from %s. Tool: %s, OS: %s, SYN-Hash: %s, Service: %s, Risk: %s/100 (%s)",
+			a.Ip, a.ScannerTool, a.EstimatedOs, a.SynHash, a.TargetService, a.RiskScore, a.Severity)
+
+		indicator := map[string]interface{}{
+			"type":            "indicator",
+			"spec_version":    "2.1",
+			"id":              fmt.Sprintf("indicator--%s", md5Hex(a.Ip+now)),
+			"created":         now,
+			"modified":        now,
+			"name":            "Malicious Honeypot Probe: " + a.Ip,
+			"description":     desc,
+			"pattern":         fmt.Sprintf("[ipv4-addr:value = '%s']", a.Ip),
+			"pattern_type":    "stix",
+			"valid_from":      now,
+			"indicator_types": []string{"malicious-activity", "reconnaissance"},
+			"confidence":      conf,
+			"labels":          []string{a.Severity, a.TargetService, a.ScannerTool},
+		}
+		objects = append(objects, indicator)
+	}
+
+	return map[string]interface{}{
+		"type":    "bundle",
+		"id":      fmt.Sprintf("bundle--%s", md5Hex(now)),
+		"objects": objects,
+	}
+}
+
 func handleCLIMode() bool {
-	if *getKey == "" && *delKey == "" && *setKey == "" && !*getStats && *actorIP == "" && !*listActors && !*exportBlocklist {
+	if *getKey == "" && *delKey == "" && *setKey == "" && !*getStats && *actorIP == "" && !*listActors && !*exportBlocklist && !*exportSTIX {
 		return false
 	}
 
@@ -386,11 +537,24 @@ func handleCLIMode() bool {
 			}
 		}
 		if count == 0 {
-			// Jika tidak ada severity tertulis, fallback cetak semua IP terdaftar
 			for _, a := range actors {
 				fmt.Println(a.Ip)
 			}
 		}
+		return true
+	}
+
+	if *exportSTIX {
+		actors, err := cdc.ListActors(client)
+		if err != nil {
+			log.Fatalf("[CLI] Gagal export STIX: %v", err)
+		}
+		bundle := buildSTIXBundle(actors)
+		data, err := json.MarshalIndent(bundle, "", "  ")
+		if err != nil {
+			log.Fatalf("[CLI] Gagal serialize STIX JSON: %v", err)
+		}
+		fmt.Println(string(data))
 		return true
 	}
 
@@ -458,8 +622,25 @@ func main() {
 		log.Fatalf("listen failed on %s: %v", listenTarget, err)
 	}
 
+	srv := &cacheServer{cache: fc, defaultTTL: *ttlFlag}
+	if *snapshotFlag != "" {
+		srv.loadSnapshot(*snapshotFlag)
+	}
+
 	s := grpc.NewServer()
-	cachepb.RegisterCacheServer(s, &cacheServer{cache: fc, defaultTTL: *ttlFlag})
+	cachepb.RegisterCacheServer(s, srv)
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		log.Println("\n[*] Sinyal shutdown diterima, menyimpan snapshot...")
+		if *snapshotFlag != "" {
+			srv.saveSnapshot(*snapshotFlag)
+		}
+		s.GracefulStop()
+		os.Exit(0)
+	}()
 
 	log.Printf("[*] CacheDB %s server listening on %s (default TTL: %d detik / %.1f jam)", version, listenTarget, *ttlFlag, float64(*ttlFlag)/3600.0)
 	if err := s.Serve(lis); err != nil {
