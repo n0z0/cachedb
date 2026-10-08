@@ -42,6 +42,7 @@ var (
 	listActors      = flag.Bool("actors", false, "CLI mode: Tampilkan daftar semua threat actor aktif di CacheDB")
 	exportBlocklist = flag.Bool("blocklist", false, "CLI mode: Ekspor daftar IP ancaman (HIGH/CRITICAL) untuk firewall blocklist")
 	exportSTIX      = flag.Bool("export-stix", false, "CLI mode: Ekspor seluruh threat intelligence ke format STIX 2.1 JSON bundle")
+	pingFlag        = flag.Bool("ping", false, "CLI mode: Liveness/readiness probe ke server CacheDB")
 	snapshotFlag    = flag.String("snapshot", "cachedb_snapshot.json", "Lokasi file persistence snapshot (kosongkan untuk nonaktifkan)")
 	target          = flag.String("target", "127.0.0.1:50051", "Target address server untuk CLI mode")
 )
@@ -392,6 +393,13 @@ func buildSTIXBundle(actors []*cachepb.ActorDossier) map[string]interface{} {
 			"indicator_types": []string{"malicious-activity", "reconnaissance"},
 			"confidence":      conf,
 			"labels":          []string{a.Severity, a.TargetService, a.ScannerTool},
+			"external_references": []map[string]interface{}{
+				{
+					"source_name": "mitre-attack",
+					"external_id": "T1595",
+					"url":         "https://attack.mitre.org/techniques/T1595/",
+				},
+			},
 		}
 		objects = append(objects, indicator)
 	}
@@ -404,7 +412,7 @@ func buildSTIXBundle(actors []*cachepb.ActorDossier) map[string]interface{} {
 }
 
 func handleCLIMode() bool {
-	if *getKey == "" && *delKey == "" && *setKey == "" && !*getStats && *actorIP == "" && !*listActors && !*exportBlocklist && !*exportSTIX {
+	if *getKey == "" && *delKey == "" && *setKey == "" && !*getStats && *actorIP == "" && !*listActors && !*exportBlocklist && !*exportSTIX && !*pingFlag {
 		return false
 	}
 
@@ -413,6 +421,16 @@ func handleCLIMode() bool {
 		log.Fatalf("[CLI] Gagal terhubung ke CacheDB %s: %v", *target, err)
 	}
 	defer conn.Close()
+
+	if *pingFlag {
+		stats, err := cdc.GetStats(client)
+		if err != nil {
+			fmt.Printf("FAIL: Tidak dapat terhubung ke CacheDB di %s: %v\n", *target, err)
+			os.Exit(1)
+		}
+		fmt.Printf("PONG (CacheDB running on %s | Active Entries: %d)\n", *target, stats.EntryCount)
+		return true
+	}
 
 	if *getStats {
 		stats, err := cdc.GetStats(client)
