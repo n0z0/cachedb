@@ -17,16 +17,18 @@ var (
 	version     = "dev"
 	showVersion = flag.Bool("version", false, "Tampilkan versi lalu keluar")
 	port        = flag.String("port", ":50051", "gRPC port untuk listen")
+	ttlFlag     = flag.Int("ttl", defaultTTL, "Default TTL data dalam detik (default: 36000 / 10 jam)")
 )
 
 const (
 	cacheSizeBytes   = 100 * 1024 * 1024 // 100MB
-	defaultTTL       = 300               // 5 menit
+	defaultTTL       = 36000             // 10 jam (36000 detik)
 	maxValueSizeByte = 64 * 1024         // 64KB
 )
 
 type cacheServer struct {
-	cache *freecache.Cache
+	cache      *freecache.Cache
+	defaultTTL int
 	cachepb.UnimplementedCacheServer
 }
 
@@ -50,7 +52,7 @@ func (s *cacheServer) Set(ctx context.Context, req *cachepb.SetRequest) (*cachep
 
 	ttl := int(req.TtlSeconds)
 	if ttl <= 0 {
-		ttl = defaultTTL
+		ttl = s.defaultTTL
 	}
 
 	err := s.cache.Set([]byte(req.Key), req.Value, ttl)
@@ -80,9 +82,9 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	cachepb.RegisterCacheServer(s, &cacheServer{cache: fc})
+	cachepb.RegisterCacheServer(s, &cacheServer{cache: fc, defaultTTL: *ttlFlag})
 
-	log.Printf("[*] CacheDB %s server listening on %s", version, *port)
+	log.Printf("[*] CacheDB %s server listening on %s (default TTL: %d detik / %.1f jam)", version, *port, *ttlFlag, float64(*ttlFlag)/3600.0)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("serve: %v", err)
 	}

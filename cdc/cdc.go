@@ -24,6 +24,15 @@ func Set(key, value string, client cachepb.CacheClient) error {
 	})
 	return err
 }
+
+func SetWithTTL(key, value string, ttlSeconds int32, client cachepb.CacheClient) error {
+	_, err := client.Set(context.Background(), &cachepb.SetRequest{
+		Key:        key,
+		Value:      []byte(value),
+		TtlSeconds: ttlSeconds,
+	})
+	return err
+}
 func Get(key string, client cachepb.CacheClient) (string, error) {
 	resp, err := client.Get(context.Background(), &cachepb.GetRequest{
 		Key: key,

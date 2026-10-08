@@ -1,6 +1,6 @@
 # cachedb
 
-Key Value on Memory with TTL 5 Minutes
+Key Value on Memory with Configurable TTL (Default: 10 Hours / 36,000 Seconds)
 
 ## Protocol Buffer
 
@@ -40,11 +40,14 @@ curl -fsSL https://raw.githubusercontent.com/n0z0/cachedb/main/install.sh | bash
 
 Setelah terpasang, jalankan server CacheDB di terminal mana saja:
 ```sh
-# Default port :50051
+# Default port :50051 dengan TTL 10 jam (36000 detik)
 cachedb
 
-# Menggunakan custom port
-cachedb -port :50052
+# Mengatur custom TTL (contoh: 1 jam = 3600 detik)
+cachedb -ttl 3600
+
+# Menggunakan custom port dan TTL 10 jam
+cachedb -port :50052 -ttl 36000
 ```
 
 ---
