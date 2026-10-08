@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
+	"fmt"
 	"log"
 	"net"
 
@@ -9,6 +11,12 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/n0z0/cachedb/proto/cachepb"
+)
+
+var (
+	version     = "dev"
+	showVersion = flag.Bool("version", false, "Tampilkan versi lalu keluar")
+	port        = flag.String("port", ":50051", "gRPC port untuk listen")
 )
 
 const (
@@ -58,9 +66,15 @@ func (s *cacheServer) Delete(ctx context.Context, req *cachepb.DeleteRequest) (*
 }
 
 func main() {
+	flag.Parse()
+	if *showVersion {
+		fmt.Println("cachedb", version)
+		return
+	}
+
 	fc := freecache.NewCache(cacheSizeBytes)
 
-	lis, err := net.Listen("tcp", ":50051")
+	lis, err := net.Listen("tcp", *port)
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
@@ -68,7 +82,7 @@ func main() {
 	s := grpc.NewServer()
 	cachepb.RegisterCacheServer(s, &cacheServer{cache: fc})
 
-	log.Println("CacheDB server on :50051")
+	log.Printf("[*] CacheDB %s server listening on %s", version, *port)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("serve: %v", err)
 	}

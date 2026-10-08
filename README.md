@@ -20,13 +20,40 @@ Install:
    protoc --go_out=. --go-grpc_out=. cache.proto
    ```
 
-## Release tag
+## Instalasi & Upgrade Otomatis
 
-```sh
-git tag v0.1.6
-git push origin --tags
-go list -m github.com/n0z0/cachedb@v0.1.6
+### Windows (PowerShell)
+Jalankan perintah berikut untuk mengunduh binary rilis terbaru dan otomatis mendaftarkannya ke PATH pengguna:
+```powershell
+irm https://raw.githubusercontent.com/n0z0/cachedb/main/install.ps1 | iex
 ```
+
+### Linux (Bash)
+Jalankan perintah berikut di terminal:
+```bash
+curl -fsSL https://raw.githubusercontent.com/n0z0/cachedb/main/install.sh | bash
+```
+
+---
+
+## Menjalankan Server
+
+Setelah terpasang, jalankan server CacheDB di terminal mana saja:
+```sh
+# Default port :50051
+cachedb
+
+# Menggunakan custom port
+cachedb -port :50052
+```
+
+---
+
+## Release Otomatis
+
+Rilis dibuat otomatis oleh [GitHub Actions](.github/workflows/release.yml) setiap kali ada push ke branch `main` pada file source code Go atau proto:
+- Versi patch dinaikkan secara otomatis dari tag terakhir (misal `v0.1.6` -> `v0.1.7`).
+- Binary langsung siap pakai (`cachedb_windows_amd64.exe` dan `cachedb_linux_amd64`) serta arsip bundel di-upload langsung ke halaman Releases.
 
 ## Usage
 
