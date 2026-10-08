@@ -8,6 +8,9 @@ service Cache {
   rpc Get(GetRequest) returns (GetResponse);
   rpc Set(SetRequest) returns (SetResponse);
   rpc Delete(DeleteRequest) returns (DeleteResponse);
+  rpc MGet(MGetRequest) returns (MGetResponse);
+  rpc MSet(MSetRequest) returns (MSetResponse);
+  rpc GetStats(StatsRequest) returns (StatsResponse);
 }
 
 message GetRequest {
@@ -22,7 +25,7 @@ message GetResponse {
 message SetRequest {
   string key = 1;
   bytes value = 2;
-  int32 ttl_seconds = 3; // 0 = tanpa TTL
+  int32 ttl_seconds = 3; // 0 = default server TTL
 }
 
 message SetResponse {
@@ -35,4 +38,45 @@ message DeleteRequest {
 
 message DeleteResponse {
   bool ok = 1;
+}
+
+message MGetRequest {
+  repeated string keys = 1;
+}
+
+message KeyValueItem {
+  string key = 1;
+  bytes value = 2;
+  bool found = 3;
+}
+
+message MGetResponse {
+  repeated KeyValueItem items = 1;
+}
+
+message SetItem {
+  string key = 1;
+  bytes value = 2;
+  int32 ttl_seconds = 3; // 0 = default server TTL
+}
+
+message MSetRequest {
+  repeated SetItem items = 1;
+}
+
+message MSetResponse {
+  int32 count = 1;
+  bool ok = 2;
+}
+
+message StatsRequest {}
+
+message StatsResponse {
+  int64 entry_count = 1;
+  int64 hit_count = 2;
+  int64 miss_count = 3;
+  double hit_rate = 4;
+  int64 evacuate_count = 5;
+  int64 expired_count = 6;
+  int64 memory_limit_bytes = 7;
 }

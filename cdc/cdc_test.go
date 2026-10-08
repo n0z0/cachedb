@@ -12,10 +12,13 @@ import (
 
 // MockCacheClient implements the cachepb.CacheClient interface for testing
 type MockCacheClient struct {
-	setFunc    func(ctx context.Context, req *cachepb.SetRequest, opts ...grpc.CallOption) (*cachepb.SetResponse, error)
-	getFunc    func(ctx context.Context, req *cachepb.GetRequest, opts ...grpc.CallOption) (*cachepb.GetResponse, error)
-	deleteFunc func(ctx context.Context, req *cachepb.DeleteRequest, opts ...grpc.CallOption) (*cachepb.DeleteResponse, error)
-	clearFunc  func(ctx context.Context, req interface{}, opts ...grpc.CallOption) (interface{}, error)
+	setFunc      func(ctx context.Context, req *cachepb.SetRequest, opts ...grpc.CallOption) (*cachepb.SetResponse, error)
+	getFunc      func(ctx context.Context, req *cachepb.GetRequest, opts ...grpc.CallOption) (*cachepb.GetResponse, error)
+	deleteFunc   func(ctx context.Context, req *cachepb.DeleteRequest, opts ...grpc.CallOption) (*cachepb.DeleteResponse, error)
+	clearFunc    func(ctx context.Context, req interface{}, opts ...grpc.CallOption) (interface{}, error)
+	mgetFunc     func(ctx context.Context, req *cachepb.MGetRequest, opts ...grpc.CallOption) (*cachepb.MGetResponse, error)
+	msetFunc     func(ctx context.Context, req *cachepb.MSetRequest, opts ...grpc.CallOption) (*cachepb.MSetResponse, error)
+	getStatsFunc func(ctx context.Context, req *cachepb.StatsRequest, opts ...grpc.CallOption) (*cachepb.StatsResponse, error)
 }
 
 func (m *MockCacheClient) Set(ctx context.Context, req *cachepb.SetRequest, opts ...grpc.CallOption) (*cachepb.SetResponse, error) {
@@ -44,6 +47,27 @@ func (m *MockCacheClient) Clear(ctx context.Context, req interface{}, opts ...gr
 		return m.clearFunc(ctx, req, opts...)
 	}
 	return struct{}{}, nil
+}
+
+func (m *MockCacheClient) MGet(ctx context.Context, req *cachepb.MGetRequest, opts ...grpc.CallOption) (*cachepb.MGetResponse, error) {
+	if m.mgetFunc != nil {
+		return m.mgetFunc(ctx, req, opts...)
+	}
+	return &cachepb.MGetResponse{}, nil
+}
+
+func (m *MockCacheClient) MSet(ctx context.Context, req *cachepb.MSetRequest, opts ...grpc.CallOption) (*cachepb.MSetResponse, error) {
+	if m.msetFunc != nil {
+		return m.msetFunc(ctx, req, opts...)
+	}
+	return &cachepb.MSetResponse{Ok: true}, nil
+}
+
+func (m *MockCacheClient) GetStats(ctx context.Context, req *cachepb.StatsRequest, opts ...grpc.CallOption) (*cachepb.StatsResponse, error) {
+	if m.getStatsFunc != nil {
+		return m.getStatsFunc(ctx, req, opts...)
+	}
+	return &cachepb.StatsResponse{}, nil
 }
 
 func TestConnect(t *testing.T) {
@@ -408,5 +432,93 @@ func TestConcurrentAccess(t *testing.T) {
 	// Wait for all Get operations to complete
 	for i := 0; i < 10; i++ {
 		<-done
+	}
+}
+
+func TestDelete(t *testing.T) {
+	deleted := false
+	mockClient := &MockCacheClient{
+		deleteFunc: func(ctx context.Context, req *cachepb.DeleteRequest, opts ...grpc.CallOption) (*cachepb.DeleteResponse, error) {
+			if req.Key == "test-del" {
+				deleted = true
+				return &cachepb.DeleteResponse{Ok: true}, nil
+			}
+			return &cachepb.DeleteResponse{Ok: false}, nil
+		},
+	}
+
+	err := Delete("test-del", mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if !deleted {
+		t.Errorf("Expected key to be deleted")
+	}
+}
+
+func TestMSet(t *testing.T) {
+	mockClient := &MockCacheClient{
+		msetFunc: func(ctx context.Context, req *cachepb.MSetRequest, opts ...grpc.CallOption) (*cachepb.MSetResponse, error) {
+			return &cachepb.MSetResponse{Count: int32(len(req.Items)), Ok: true}, nil
+		},
+	}
+
+	items := map[string]string{
+		"k1": "v1",
+		"k2": "v2",
+		"k3": "v3",
+	}
+
+	count, err := MSet(items, mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if count != 3 {
+		t.Errorf("Expected count 3, got %d", count)
+	}
+}
+
+func TestMGet(t *testing.T) {
+	mockClient := &MockCacheClient{
+		mgetFunc: func(ctx context.Context, req *cachepb.MGetRequest, opts ...grpc.CallOption) (*cachepb.MGetResponse, error) {
+			items := []*cachepb.KeyValueItem{
+				{Key: "k1", Value: []byte("val1"), Found: true},
+				{Key: "k2", Value: []byte("val2"), Found: true},
+				{Key: "k3", Value: nil, Found: false},
+			}
+			return &cachepb.MGetResponse{Items: items}, nil
+		},
+	}
+
+	res, err := MGet([]string{"k1", "k2", "k3"}, mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if len(res) != 2 {
+		t.Errorf("Expected 2 found items, got %d", len(res))
+	}
+	if res["k1"] != "val1" || res["k2"] != "val2" {
+		t.Errorf("Unexpected values: %v", res)
+	}
+}
+
+func TestGetStats(t *testing.T) {
+	mockClient := &MockCacheClient{
+		getStatsFunc: func(ctx context.Context, req *cachepb.StatsRequest, opts ...grpc.CallOption) (*cachepb.StatsResponse, error) {
+			return &cachepb.StatsResponse{
+				EntryCount: 42,
+				HitCount:   100,
+				MissCount:  10,
+				HitRate:    0.9,
+			}, nil
+		},
+	}
+
+	stats, err := GetStats(mockClient)
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	if stats.EntryCount != 42 || stats.HitCount != 100 {
+		t.Errorf("Unexpected stats: %+v", stats)
 	}
 }

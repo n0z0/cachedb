@@ -38,16 +38,43 @@ curl -fsSL https://raw.githubusercontent.com/n0z0/cachedb/main/install.sh | bash
 
 ## Menjalankan Server
 
-Setelah terpasang, jalankan server CacheDB di terminal mana saja:
+Setelah terpasang, jalankan server CacheDB di terminal mana saja. Secara default, CacheDB mengikat diri ke **`127.0.0.1:50051` (Localhost)** untuk keamanan maksimal agar tidak dapat diakses dari jaringan luar/LAN tanpa konfigurasi rumit:
+
 ```sh
-# Default port :50051 dengan TTL 10 jam (36000 detik)
+# Default: listen di 127.0.0.1:50051 dengan TTL 10 jam (36000 detik)
 cachedb
 
 # Mengatur custom TTL (contoh: 1 jam = 3600 detik)
 cachedb -ttl 3600
 
-# Menggunakan custom port dan TTL 10 jam
+# Menggunakan custom port di localhost (contoh: 127.0.0.1:50052)
 cachedb -port :50052 -ttl 36000
+
+# Eksplisit listen address (misal jika ingin listen di IP interface tertentu)
+cachedb -addr 127.0.0.1:50051
+```
+
+---
+
+## Mode CLI / Observability
+
+Binary `cachedb` juga dapat digunakan sebagai tool CLI untuk menginspeksi, memonitor metrik, atau menguji nilai cache langsung dari terminal tanpa perlu menjalankan program terpisah:
+
+```sh
+# Melihat statistik server (Entry count, Hit/Miss, Hit Rate %, Memory limit)
+cachedb -stats
+
+# Mengambil nilai suatu key
+cachedb -get 192.168.1.150
+
+# Menulis / mengupdate key
+cachedb -set testkey -val "hello-world"
+
+# Menghapus key
+cachedb -del testkey
+
+# Target ke host/port tertentu (default: 127.0.0.1:50051)
+cachedb -target 127.0.0.1:50052 -stats
 ```
 
 ---
@@ -72,61 +99,64 @@ go get github.com/n0z0/cachedb
 package main
 
 import (
- "fmt"
- "log"
+	"fmt"
+	"log"
 
- "github.com/n0z0/cachedb/cdc"
+	"github.com/n0z0/cachedb/cdc"
 )
 
 func main() {
- // Connect to cache server
- client, conn, err := cdc.Connect("127.0.0.1:50051")
- if err != nil {
-  log.Fatalf("Failed to connect: %v", err)
- }
- defer conn.Close()
+	// Connect to cache server
+	client, conn, err := cdc.Connect("127.0.0.1:50051")
+	if err != nil {
+		log.Fatalf("Failed to connect: %v", err)
+	}
+	defer conn.Close()
 
- // Set a key-value pair
- err = cdc.Set("10.14.203.14", "8765", client)
- if err != nil {
-  log.Fatalf("Failed to set: %v", err)
- }
+	// 1. Set a single key-value pair
+	err = cdc.Set("10.14.203.14", "8765", client)
+	if err != nil {
+		log.Fatalf("Failed to set: %v", err)
+	}
 
- // Get a value by key
- value, err := cdc.Get("10.14.203.14", client)
- if err != nil {
-  log.Fatalf("Failed to get: %v", err)
- }
+	// 2. Get a value by key
+	value, err := cdc.Get("10.14.203.14", client)
+	if err != nil {
+		log.Fatalf("Failed to get: %v", err)
+	}
+	if value != "" {
+		fmt.Printf("Value: %s\n", value)
+	}
 
- if value != "" {
-  fmt.Printf("Value: %s\n", value)
- } else {
-  fmt.Println("Key not found")
- }
+	// 3. Batch MSet (Mengirim banyak key sekaligus dalam 1 RPC call)
+	items := map[string]string{
+		"actor:os:10.14.203.14":      "Linux",
+		"actor:scanner:10.14.203.14": "Nmap",
+		"actor:risk:10.14.203.14":    "85",
+	}
+	count, _ := cdc.MSet(items, client)
+	fmt.Printf("Disimpan %d item sekaligus\n", count)
+
+	// 4. Batch MGet (Mengambil banyak key sekaligus)
+	results, _ := cdc.MGet([]string{"actor:os:10.14.203.14", "actor:risk:10.14.203.14"}, client)
+	for k, v := range results {
+		fmt.Printf("%s = %s\n", k, v)
+	}
+
+	// 5. Cek server stats
+	stats, _ := cdc.GetStats(client)
+	fmt.Printf("Total entries: %d, Hit Rate: %.2f%%\n", stats.EntryCount, stats.HitRate*100)
 }
 ```
 
-### API Reference
+### API Reference (`cdc` package)
 
-#### `Connect(address string) (cachepb.CacheClient, error)`
-
-Establishes a connection to the cache server.
-
-- Returns: gRPC client connection or error
-
-#### `Set(key, value string, client cachepb.CacheClient) error`
-
-Sets a key-value pair in the cache.
-
-- `key`: The cache key
-- `value`: The value to store
-- `client`: The gRPC client connection
-- Returns: error or nil if successful
-
-#### `Get(key string, client cachepb.CacheClient) (string, error)`
-
-Retrieves a value by key from the cache.
-
-- `key`: The cache key to retrieve
-- `client`: The gRPC client connection
-- Returns: The value as string and error (or empty string if key not found)
+- `Connect(address string) (cachepb.CacheClient, *grpc.ClientConn, error)`: Membuka koneksi gRPC ke CacheDB.
+- `Set(key, value string, client cachepb.CacheClient) error`: Menyimpan key-value dengan default server TTL.
+- `SetWithTTL(key, value string, ttlSeconds int32, client cachepb.CacheClient) error`: Menyimpan key-value dengan custom TTL.
+- `Get(key string, client cachepb.CacheClient) (string, error)`: Mengambil value string berdasarkan key.
+- `Delete(key string, client cachepb.CacheClient) error`: Menghapus key dari cache.
+- `MSet(items map[string]string, client cachepb.CacheClient) (int32, error)`: Batch set banyak key sekaligus.
+- `MSetWithTTL(items map[string]string, ttlSeconds int32, client cachepb.CacheClient) (int32, error)`: Batch set dengan custom TTL.
+- `MGet(keys []string, client cachepb.CacheClient) (map[string]string, error)`: Batch get banyak key sekaligus.
+- `GetStats(client cachepb.CacheClient) (*cachepb.StatsResponse, error)`: Mengambil metrik performa CacheDB.
